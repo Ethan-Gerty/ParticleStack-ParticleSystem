@@ -1,0 +1,13 @@
+{
+  "name": "com.ethangerty.particlestack",
+  "version": "0.7.0",
+  "displayName": "ParticleStack",
+  "description": "A lightweight, code-first 2D Unity particle system built around simple, modular components and easily programmable particle behaviour.",
+  "unity": "2022.3",
+  "author": {
+    "name": "Ethan Gerty",
+    "email": "gertyjames05@gmail.com",
+    "url": "https://github.com/Ethan-Gerty"
+  },
+  "type": "library"
+}
