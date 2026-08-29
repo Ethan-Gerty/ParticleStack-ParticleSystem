@@ -4,10 +4,6 @@ public class PSCircleShape : PSShape
 {
     [SerializeField] private Vector2 radiusRange;
 
-
-    public PSCircleShape() { }
-
-
     public override void GetSpawnData(out Vector2 position, out Vector2 direction)
     {
         float radius = Random.Range(radiusRange.x, radiusRange.y);

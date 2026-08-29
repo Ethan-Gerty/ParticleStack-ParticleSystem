@@ -1,59 +1,96 @@
 # ParticleStack
 
-**ParticleStack is a lightweight, code-first 2D particle system for Unity focused on simplicity, performance, and easy customisation through code.**
+**ParticleStack is a lightweight, code-first 2D particle system for Unity built around simple components, GPU-instanced rendering, and easily programmable particle behaviour.**
 
-ParticleStack was created as a smaller, more understandable alternative to Unity's built-in Particle System.
+ParticleStack is designed for programmers who want a smaller, more direct alternative to Unity's built-in Particle System for 2D effects.
 
-Rather than putting every possible particle feature into one large component, ParticleStack separates effects into small, focused systems for **emission**, **shape**, **behaviour**, and **rendering**.
+Instead of placing every possible feature inside one large particle component, ParticleStack separates effects into focused systems for **emission**, **shape**, **behaviour**, and **rendering**. The built-in components cover common use cases, while the abstract `PSBehaviour`, `PSEmission`, and `PSShape` classes make project-specific extensions straightforward.
 
-The goal is not to recreate every feature of Unity's Particle System.
-
-The goal is to provide a simple foundation that handles the common particle-system infrastructure while making it easy for programmers to create whatever project-specific behaviour they need.
+ParticleStack is not intended to match Unity's Particle System or VFX Graph feature-for-feature. Its goal is to stay **small, understandable, performant, and close to code**.
 
 ---
 
 ## Current Version
 
-### v0.2.0
+### v0.3.0
 
-v0.2.0 is the first version of ParticleStack considered a proper usable release.
+v0.3.0 expands ParticleStack's core effect-building tools with additional shapes and a larger set of built-in behaviours.
 
-The original prototype renderer has been completely replaced with a **GPU-instanced mesh renderer**, removing the need for individual particle GameObjects and SpriteRenderers.
+The system continues to use the GPU-instanced renderer introduced in v0.2.0, allowing particles to remain lightweight data rather than individual GameObjects, Transforms, or SpriteRenderers.
 
-ParticleStack is still early in development and its API may change between versions.
+ParticleStack is still in early development and its API may change between versions.
 
 ---
 
 # Features
 
-- Lightweight data-based particles using `PSParticle`
-- GPU-instanced particle rendering
-- Batched rendering for large particle counts
-- Custom ParticleStack instanced shader
-- Per-particle colour support
+## Core
+
+- Lightweight `PSParticle` struct-based particle data
 - Preallocated particle storage
 - Reusable particle slots
+- Centralised particle simulation
+- Automatic dead-particle removal using packed-array replacement
 - No GameObject per particle
 - No MonoBehaviour per particle
-- No Rigidbody2D required for particle movement
-- Burst emission
-- Ongoing emission
-- Circle emission shape
-- Configurable:
-  - Lifetime
-  - Speed
-  - Scale
-  - Colour
-  - Rotation
-  - Angular velocity
-- Modular particle behaviours
-- Custom particle behaviour support
-- Custom emission support
-- Custom shape support
-- Random colour behaviour
-- Random lifetime behaviour
-- Random scale behaviour
-- Random speed behaviour
+- No Rigidbody2D required for normal particle movement
+
+## Rendering
+
+- GPU-instanced mesh rendering
+- Batched rendering in groups of up to 1023 instances
+- Custom `ParticleStack/Instanced` shader
+- Per-particle colour support
+- Sprite-based particle mesh generation
+- Runtime material instancing
+
+## Emission
+
+- `PSBurstEmission`
+- `PSOngoingEmission`
+- High-rate ongoing emission using an accumulator so fractional emissions are preserved between frames
+- Extensible `PSEmission` base class
+
+## Shapes
+
+- `PSCircleShape`
+- `PSLineShape`
+- `PSConeShape`
+- `PSBoxShape`
+- Extensible `PSShape` base class
+
+## Behaviours
+
+### Randomisation
+
+- `PSRandomColourBeh`
+- `PSRandomLifetimeBeh`
+- `PSRandomScaleBeh`
+- `PSRandomSpeedBeh`
+
+### Motion
+
+- `PSGravityBeh`
+- `PSForceBeh`
+- `PSDragBeh`
+- `PSVelocityOverLifetimeBeh`
+
+### Over Lifetime
+
+- `PSScaleOverTimeBeh`
+- `PSColourOverTimeBeh`
+
+## Configurable Particle Properties
+
+- Lifetime
+- Speed
+- Scale
+- Colour
+- Rotation
+- Angular velocity
+- Maximum particle count
+- Sprite
+- Material
 
 ---
 
@@ -61,20 +98,20 @@ ParticleStack is still early in development and its API may change between versi
 
 ParticleStack is built around a few core ideas.
 
-## Keep It Simple
+## Keep It Small
 
-Particle effects should be understandable by looking at the components attached to the GameObject.
+A particle effect should be understandable by looking at the components attached to its GameObject.
 
 For example:
 
 ```text
-Fire Effect
+Smoke
 ├── PSEmitter
 ├── PSOngoingEmission
 ├── PSCircleShape
-├── PSRandomLifetimeBeh
-├── PSRandomScaleBeh
-└── PSRandomColourBeh
+├── PSDragBeh
+├── PSScaleOverTimeBeh
+└── PSColourOverTimeBeh
 ```
 
 Each component has one clear responsibility.
@@ -85,9 +122,7 @@ Each component has one clear responsibility.
 
 ParticleStack is designed primarily for programmers.
 
-Particle behaviour is intentionally exposed through simple C# classes rather than hidden behind a large editor interface.
-
-A particle is ultimately just data:
+An individual particle is simply data:
 
 ```csharp
 particle.position;
@@ -103,36 +138,34 @@ particle.lifeTime;
 particle.age;
 ```
 
-Custom systems can directly manipulate this data.
+Behaviours work directly with that data rather than interacting with a hidden particle object or Rigidbody.
 
 ---
 
 ## Make Custom Behaviour Easy
 
-ParticleStack does not attempt to include a built-in component for every possible effect.
+ParticleStack deliberately does not include a specialised component for every possible effect.
 
-Instead, it provides simple base classes that users can extend:
+Instead, users can extend the same base classes used by ParticleStack itself:
 
 ```text
-PSBehaviour
-PSEmission
-PSShape
+PSBehaviour  → controls what particles do
+PSEmission   → controls when particles are emitted
+PSShape      → controls where particles spawn and their initial direction
 ```
 
-Built-in ParticleStack functionality uses the same systems available to users.
+There is no separate advanced extension API.
 
-There is no separate "advanced custom API".
+If a project needs homing particles, orbiting particles, gameplay-reactive particles, a custom spawn pattern, or an unusual emission trigger, it can be implemented as a normal ParticleStack component.
 
 ---
 
 # Architecture
 
-ParticleStack separates particle effects into several main systems:
-
 ```text
 PSEmission
     │
-    │ decides when particles are created
+    │ decides when a particle should be created
     ▼
 
 PSShape
@@ -150,16 +183,19 @@ PSEmitter
     ├── stores particles
     ├── simulates particles
     ├── runs behaviours
-    └── removes dead particles
+    ├── removes dead particles
+    └── prepares instance data
+    │
+    ├──────────────► PSBehaviour
+    │                modifies particle state
     │
     ▼
 
-PSBehaviour
+GPU-Instanced Renderer
     │
-    │ modifies particles
-    ▼
-
-GPU Instanced Renderer
+    ├── transform matrices
+    ├── per-particle colours
+    └── ParticleStack shader
 ```
 
 ---
@@ -169,10 +205,9 @@ GPU Instanced Renderer
 Create a GameObject and add:
 
 1. `PSEmitter`
-2. A `PSEmission`
-3. A `PSShape`
-
-Then add any optional `PSBehaviour` components.
+2. One `PSEmission`
+3. One `PSShape`
+4. Any optional `PSBehaviour` components
 
 For example:
 
@@ -180,78 +215,108 @@ For example:
 Particle Effect
 ├── PSEmitter
 ├── PSBurstEmission
-├── PSCircleShape
-├── PSRandomSpeedBeh
-└── PSRandomColourBeh
+├── PSConeShape
+├── PSGravityBeh
+├── PSDragBeh
+└── PSColourOverTimeBeh
 ```
 
-Assign a sprite and ParticleStack-compatible material to the emitter and configure the particle settings.
+On `PSEmitter`, configure the particle settings and assign a sprite and compatible material.
 
 ---
 
 # Emission
 
-Emission components control **when particles are created**.
+## PSBurstEmission
 
-ParticleStack currently includes:
+Emits a configurable number of particles at once.
 
-### PSBurstEmission
+The current implementation bursts when the effect starts and again when the component is re-enabled after it has started.
 
-Creates multiple particles at once.
+It can also be triggered directly through:
+
+```csharp
+burstEmission.Burst();
+```
 
 Useful for:
 
 - Explosions
-- Impact effects
+- Impacts
 - Enemy deaths
-- Spell impacts
+- Spell effects
 - Hit particles
 
-### PSOngoingEmission
+---
 
-Continuously creates particles at a configurable rate.
+## PSOngoingEmission
+
+Continuously emits particles using a configurable particles-per-second rate.
+
+The emitter uses an accumulated fractional spawn count rather than relying on a simple timer. This allows high emission rates to produce multiple particles in a single frame when required and preserves fractional emissions between frames.
 
 Useful for:
 
-- Fire
 - Smoke
+- Fire
+- Rain
 - Magic effects
-- Trails
 - Environmental particles
+- Trails
 
 ---
 
 # Shapes
 
-Shapes control:
+## PSCircleShape
 
-- Where a particle spawns
-- Its initial direction
+Spawns particles at a random radius inside a configurable radius range, with particles travelling radially away from the emitter.
 
-ParticleStack currently includes:
+A radius range of zero effectively behaves as a point emitter, while larger values can create rings or radial bands.
 
-### PSCircleShape
+---
 
-Produces particle spawn information using a circular shape.
+## PSLineShape
 
-Shapes are kept separate from emission so the same emission system can be used with completely different spawn patterns.
+Spawns particles along a line centred on the emitter.
+
+The line follows the GameObject's local right axis and particles travel along its local up direction, so rotating the GameObject rotates the complete effect.
+
+---
+
+## PSConeShape
+
+Emits particles within a configurable angular spread around the emitter's local up direction.
+
+The radius controls how far from the emitter the particles begin.
+
+Useful for:
+
+- Fire
+- Exhaust
+- Sprays
+- Weapon effects
+- Directional magic
+
+---
+
+## PSBoxShape
+
+Spawns particles from the edges of a configurable rectangular shape and emits them outward from the selected edge.
 
 ---
 
 # Particle Behaviours
 
-`PSBehaviour` allows particles to be modified either when they spawn or while they are alive.
-
-A custom behaviour can override:
+`PSBehaviour` exposes two extension points:
 
 ```csharp
 public override void OnParticleSpawn(ref PSParticle particle)
 {
-
 }
 ```
 
-and/or:
+and:
 
 ```csharp
 public override void UpdateParticle(
@@ -259,11 +324,68 @@ public override void UpdateParticle(
     float deltaTime
 )
 {
-
 }
 ```
 
-For example:
+ParticleStack automatically discovers `PSBehaviour` components attached to the same GameObject as the emitter.
+
+---
+
+## Random Behaviours
+
+### PSRandomColourBeh
+
+Selects a random colour from a configured array when the particle spawns.
+
+### PSRandomLifetimeBeh
+
+Assigns a random lifetime from a configurable range.
+
+### PSRandomScaleBeh
+
+Randomises the particle's X and Y scale from separate ranges.
+
+### PSRandomSpeedBeh
+
+Randomises the particle's initial speed while preserving its emission direction.
+
+---
+
+## Motion Behaviours
+
+### PSGravityBeh
+
+Applies downward acceleration to particles over time.
+
+### PSForceBeh
+
+Applies a constant force in a configurable direction.
+
+### PSDragBeh
+
+Applies frame-rate-independent exponential damping to particle velocity.
+
+### PSVelocityOverLifetimeBeh
+
+Interpolates particle velocity from its starting value toward a target velocity over its lifetime.
+
+---
+
+## Over-Time Behaviours
+
+### PSScaleOverTimeBeh
+
+Interpolates particle scale from its starting scale toward a target scale over its lifetime.
+
+### PSColourOverTimeBeh
+
+Interpolates particle colour from its starting colour toward a target colour over its lifetime.
+
+---
+
+# Creating a Custom Behaviour
+
+Create a script that inherits from `PSBehaviour`:
 
 ```csharp
 using UnityEngine;
@@ -275,63 +397,42 @@ public class MyParticleBehaviour : PSBehaviour
         float deltaTime
     )
     {
-        particle.velocity += Vector2.down * deltaTime;
+        // Change the particle however you want.
     }
 }
 ```
 
-Add the behaviour to the same GameObject as the `PSEmitter` and ParticleStack will automatically include it in the simulation.
+Add it to the same GameObject as `PSEmitter`.
 
-This makes it easy to create project-specific effects such as:
-
-- Gravity
-- Attraction
-- Repulsion
-- Homing
-- Orbiting
-- Wind
-- Wobbling
-- Gameplay-reactive particles
-
-without changing ParticleStack itself.
+ParticleStack treats custom behaviours exactly like its built-in behaviours.
 
 ---
 
-# Custom Emissions
+# Creating a Custom Emission
 
-Custom emission systems can be created by inheriting from:
+Create a class that inherits from `PSEmission`.
 
-```csharp
-PSEmission
-```
-
-An emission decides **when particles should be created**.
-
-The base emission class handles particle creation, allowing custom emissions to simply call:
+When your custom trigger decides a particle should be created, call:
 
 ```csharp
 EmitParticle();
 ```
 
-This can be used to create systems such as:
+The base emission system requests spawn data from the current `PSShape`, constructs the `PSParticle`, and sends it to the emitter.
 
-- Timed emissions
-- Random interval emissions
-- Gameplay-triggered emissions
-- Rhythm-based emissions
-- Distance-based emissions
+This can be used for things such as:
+
+- Gameplay-triggered emission
+- Random intervals
+- Rhythm-based emission
+- Distance-based emission
+- Custom timed patterns
 
 ---
 
-# Custom Shapes
+# Creating a Custom Shape
 
-Custom spawn shapes can be created by inheriting from:
-
-```csharp
-PSShape
-```
-
-and implementing:
+Create a class that inherits from `PSShape` and implement:
 
 ```csharp
 public override void GetSpawnData(
@@ -339,55 +440,41 @@ public override void GetSpawnData(
     out Vector2 direction
 )
 {
-
 }
 ```
 
-ParticleStack does not need to know how the shape works.
+A shape only needs to provide:
 
-It only needs a spawn position and direction.
+- the particle's spawn position
+- the particle's initial direction
 
-This makes it possible to create shapes such as:
-
-```text
-Point
-Box
-Cone
-Line
-Ring
-Character Outline
-Custom Path
-```
-
-or anything specific to the game using ParticleStack.
+Everything else remains independent of the shape.
 
 ---
 
 # Rendering
 
-ParticleStack does not create a GameObject or SpriteRenderer for every particle.
+ParticleStack does not create a renderer object for every particle.
 
-Particles exist only as data inside the emitter.
-
-Rendering follows roughly this process:
+Instead:
 
 ```text
 PSParticle[]
     ↓
 Particle Simulation
     ↓
-Transform Matrices
+Matrix4x4 Transform Data
 +
-Particle Colours
+Particle Colour Data
     ↓
 GPU Instance Batches
     ↓
-ParticleStack Shader
+ParticleStack/Instanced Shader
 ```
 
-Large groups of particles sharing the same mesh and material are submitted together using GPU instancing.
+The renderer converts each active particle into a transform matrix and colour value and submits the instances in batches.
 
-This avoids the overhead of maintaining thousands of:
+This avoids maintaining thousands of:
 
 ```text
 GameObjects
@@ -400,13 +487,11 @@ for visual particles.
 
 ---
 
-# Particle Lifetime
+# Particle Storage
 
-Particles are stored inside a preallocated array.
+Particles are stored in a preallocated array.
 
-When a particle dies, ParticleStack does not shift the entire collection.
-
-Instead, the last active particle is moved into the empty position.
+When a particle dies, the last active particle is copied into its slot:
 
 ```text
 Before:
@@ -420,26 +505,26 @@ After:
 [A] [E] [C] [D]
 ```
 
-Particle order is not important, allowing removal to remain inexpensive.
+This keeps active particles packed together and avoids shifting every later element in the array.
 
-Particle slots are then reused by future emissions.
+The freed slot can then be reused by a future particle.
 
 ---
 
 # What ParticleStack Is For
 
-ParticleStack is particularly aimed at:
+ParticleStack is particularly suited to:
 
 - 2D games
 - Indie games
 - Pixel-art games
 - Gameplay-driven particle effects
-- Programmers who prefer working directly with code
-- Projects that do not need the full complexity of Unity's Particle System
+- Programmers who prefer direct C# control
+- Projects that want a small and understandable particle architecture
 
-ParticleStack is **not** intended to replace Unity's Particle System or VFX Graph for every possible use case.
+ParticleStack is not intended to replace Unity's Particle System or VFX Graph in every use case.
 
-Unity's built-in systems provide significantly more functionality and mature tooling.
+Those systems provide much more mature tooling and a far larger feature set.
 
 ParticleStack instead focuses on being:
 
@@ -447,32 +532,13 @@ ParticleStack instead focuses on being:
 
 ---
 
-# Planned Development
-
-Future versions may explore features such as:
-
-- Additional shapes
-- Additional built-in behaviours
-- Colour over lifetime
-- Scale over lifetime
-- Rotation over lifetime
-- Drag and gravity behaviours
-- Improved particle value/randomisation controls
-- Better runtime controls
-- Editor warnings and debugging tools
-- Further rendering and simulation optimisation
-
-Features will be added when they provide broadly useful functionality rather than simply attempting to match Unity's Particle System feature-for-feature.
-
----
-
 # Status
 
-ParticleStack is currently in active early development.
+ParticleStack is in active early development.
 
-### Current release: `v0.2.0`
+### Current release: `v0.3.0`
 
-The API and project structure may change as the system develops.
+The API and project structure may change as development continues.
 
 ---
 
@@ -487,4 +553,3 @@ The API and project structure may change as the system develops.
 Created by **Ethan Gerty** as a code driven particle system built for simplicity and easy to use, programmable components.
 
 GitHub: https://github.com/Ethan-Gerty
-

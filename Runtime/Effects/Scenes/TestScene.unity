@@ -221,12 +221,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1470981767}
   - component: {fileID: 1470981766}
-  - component: {fileID: 1470981768}
+  - component: {fileID: 1470981776}
   - component: {fileID: 1470981769}
-  - component: {fileID: 1470981773}
   - component: {fileID: 1470981771}
-  - component: {fileID: 1470981775}
-  - component: {fileID: 1470981774}
+  - component: {fileID: 1470981777}
+  - component: {fileID: 1470981778}
   m_Layer: 0
   m_Name: ParticleSystem
   m_TagString: Untagged
@@ -246,10 +245,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c66b6c22dd364c7498b8e23b07747a06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <maxParticles>k__BackingField: 100000
+  <maxParticles>k__BackingField: 1000
   lifetime: 2
-  particleSpeed: 3
-  particleScale: {x: 1, y: 1}
+  particleSpeed: 1
+  particleScale: {x: 2, y: 2}
   particleColour: {r: 1, g: 1, b: 1, a: 1}
   startRotation: 0
   startAngularVelocity: 0
@@ -272,19 +271,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1470981768
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1470981765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edda5e62fbc8e9b4496857ae75f37710, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  radiusRange: {x: 0, y: 2}
 --- !u!114 &1470981769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -297,7 +283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd08c34c1a5ad14bad66c08e88f5e69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnRate: 30000
+  spawnRate: 10
 --- !u!114 &1470981771
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -317,7 +303,7 @@ MonoBehaviour:
   - {r: 0, g: 1, b: 1, a: 1}
   - {r: 0, g: 0, b: 1, a: 1}
   - {r: 1, g: 0, b: 1, a: 1}
---- !u!114 &1470981773
+--- !u!114 &1470981776
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -326,12 +312,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1470981765}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8780e5dd83052934095f43a84650a049, type: 3}
+  m_Script: {fileID: 11500000, guid: bba6f354f74dc354abe97ab04ac3843c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xRange: {x: 0.25, y: 2.25}
-  yRange: {x: 0.5, y: 2.25}
---- !u!114 &1470981774
+  angle: 45
+  radius: 1
+--- !u!114 &1470981777
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -340,11 +326,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1470981765}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d60a17bd3ff277429ee21e3512be78a, type: 3}
+  m_Script: {fileID: 11500000, guid: bc6c48b7df5ebd747920b71c989e9b18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: {x: 1, y: 3}
---- !u!114 &1470981775
+  scaleTo: {x: 0, y: 0}
+--- !u!114 &1470981778
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -353,10 +339,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1470981765}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f9ce5a5ec128bf4c9ca13d42e4726e3, type: 3}
+  m_Script: {fileID: 11500000, guid: aac3be9fbe2fd25458e3160b96f09d43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: {x: 0.25, y: 3}
+  direction: {x: 1, y: 0}
+  force: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
