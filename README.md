@@ -484,7 +484,7 @@ The API and project structure may change as the system develops.
 
 # Author
 
-Created by **Ethan Gerty** as a gameplay-focused animation system designed around clarity, control, and predictable frame-based behaviour.
+Created by **Ethan Gerty** as a code driven particle system built for simplicity and easy to use, programmable components.
 
 GitHub: https://github.com/Ethan-Gerty
 
