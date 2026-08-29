@@ -141,9 +141,3 @@ ParticleStack is not intended to reproduce every feature of Unity's built-in Par
 ## Current Status
 
 ParticleStack is currently an early-stage project and its API and feature set may change as development continues.
-
-# Author
-
-Created by **Ethan Gerty** as a code-focused particle system designed around clarity, control, and simplistic particle behaviour.
-
-GitHub: https://github.com/Ethan-Gerty

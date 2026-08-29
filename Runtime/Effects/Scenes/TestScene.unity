@@ -223,11 +223,10 @@ GameObject:
   - component: {fileID: 1470981766}
   - component: {fileID: 1470981768}
   - component: {fileID: 1470981769}
-  - component: {fileID: 1470981770}
-  - component: {fileID: 1470981774}
   - component: {fileID: 1470981773}
-  - component: {fileID: 1470981772}
   - component: {fileID: 1470981771}
+  - component: {fileID: 1470981775}
+  - component: {fileID: 1470981774}
   m_Layer: 0
   m_Name: ParticleSystem
   m_TagString: Untagged
@@ -247,15 +246,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c66b6c22dd364c7498b8e23b07747a06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <maxParticles>k__BackingField: 1000
-  lifetime: 1
+  <maxParticles>k__BackingField: 100000
+  lifetime: 2
   particleSpeed: 3
   particleScale: {x: 1, y: 1}
   particleColour: {r: 1, g: 1, b: 1, a: 1}
   startRotation: 0
   startAngularVelocity: 0
   sprite: {fileID: 21300000, guid: 3069f5c3b0d118a4ca6b3c3eb67cdc7a, type: 3}
-  material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  material: {fileID: 2100000, guid: 451f4d5058c8e0c47adc0a2c6bb9547b, type: 2}
   sortingLayerName: Default
   orderInLayer: 0
 --- !u!4 &1470981767
@@ -285,7 +284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edda5e62fbc8e9b4496857ae75f37710, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radiusRange: {x: 0, y: 1}
+  radiusRange: {x: 0, y: 2}
 --- !u!114 &1470981769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,20 +297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd08c34c1a5ad14bad66c08e88f5e69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnRate: 6
---- !u!114 &1470981770
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1470981765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df82ffd5a6ed0614fb84bec3ea5e16a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  count: 100
+  spawnRate: 30000
 --- !u!114 &1470981771
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,23 +310,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7426591b8de39654db4cfa178f9a652c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  colourList:
+  colours:
   - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0.014506578, a: 1}
-  - {r: 0, g: 0.04620838, b: 1, a: 1}
---- !u!114 &1470981772
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1470981765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f9ce5a5ec128bf4c9ca13d42e4726e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  range: {x: 0.25, y: 3}
+  - {r: 1, g: 1, b: 0, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 0, g: 1, b: 1, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 1, g: 0, b: 1, a: 1}
 --- !u!114 &1470981773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,8 +329,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8780e5dd83052934095f43a84650a049, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xRange: {x: 0.75, y: 1.25}
-  yRange: {x: 0.75, y: 1.25}
+  xRange: {x: 0.25, y: 2.25}
+  yRange: {x: 0.5, y: 2.25}
 --- !u!114 &1470981774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -367,7 +343,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d60a17bd3ff277429ee21e3512be78a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: {x: 2, y: 5}
+  range: {x: 1, y: 3}
+--- !u!114 &1470981775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1470981765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f9ce5a5ec128bf4c9ca13d42e4726e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  range: {x: 0.25, y: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

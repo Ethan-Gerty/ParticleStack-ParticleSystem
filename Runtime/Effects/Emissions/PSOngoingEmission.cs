@@ -1,26 +1,27 @@
+using System;
 using UnityEngine;
 
 public class PSOngoingEmission : PSEmission
 {
-    [SerializeField] private float spawnRate;
-    private float spawnTime;
-    private float spawnTimer;
+    [SerializeField] private float spawnRate = 10f;
 
-    private void OnEnable()
-    {
-        spawnTime = 1.0f / spawnRate;
-        spawnTimer = spawnTime;
-    }
+    private float spawnAccumulator;
 
     private void Update()
     {
-        if (spawnRate <= 0) return;
+        if (spawnRate <= 0f) return;
 
-        if (spawnTimer > 0)
-            spawnTimer -= Time.deltaTime;
-        else
+        spawnAccumulator += spawnRate * Time.deltaTime;
+
+        int particlesToSpawn = Mathf.FloorToInt(spawnAccumulator);
+
+        if (particlesToSpawn <= 0)
+            return;
+
+        spawnAccumulator -= particlesToSpawn;
+
+        for (int i = 0; i < particlesToSpawn; i++)
         {
-            spawnTimer = spawnTime;
             EmitParticle();
         }
     }

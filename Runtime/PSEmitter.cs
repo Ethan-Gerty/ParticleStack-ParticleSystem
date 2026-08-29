@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.U2D;
+using UnityEngine.Rendering;
 
 public class PSEmitter : MonoBehaviour
 {
@@ -29,10 +29,15 @@ public class PSEmitter : MonoBehaviour
     [SerializeField] private string sortingLayerName = "Default";
     [SerializeField] private int orderInLayer = 0;
 
-    private SpriteRenderer[] renderers;
-    private int previousActiveCount;
+    private const int MAX_INSTANCES_PER_BATCH = 1023;
 
-    private Transform rendererParent;
+    private Mesh particleMesh;
+    private Material runtimeMaterial;
+    private MaterialPropertyBlock propertyBlock;
+
+    private readonly Matrix4x4[] instanceMatrices = new Matrix4x4[MAX_INSTANCES_PER_BATCH];
+
+    private readonly Vector4[] instanceColours = new Vector4[MAX_INSTANCES_PER_BATCH];
 
 
 
@@ -41,9 +46,15 @@ public class PSEmitter : MonoBehaviour
     {
         particles = new PSParticle[maxParticles];
 
-        CreateRendererPool();
-        RenderParticles();
         GetBehaviours();
+
+        CreateParticleMesh();
+
+        propertyBlock = new MaterialPropertyBlock();
+
+        runtimeMaterial = new Material(material);
+        runtimeMaterial.enableInstancing = true;
+        runtimeMaterial.mainTexture = sprite.texture;
     }
 
     private void Update()
@@ -54,6 +65,15 @@ public class PSEmitter : MonoBehaviour
     private void LateUpdate()
     {
         RenderParticles();
+    }
+
+    private void OnDestroy()
+    {
+        if (particleMesh != null)
+            Destroy(particleMesh);
+
+        if (runtimeMaterial != null)
+            Destroy(runtimeMaterial);
     }
 
 
@@ -130,78 +150,98 @@ public class PSEmitter : MonoBehaviour
 
 
 
-    private void CreateRendererPool()
+    private void CreateParticleMesh()
     {
-        renderers = new SpriteRenderer[maxParticles];
+        particleMesh = new Mesh();
+        particleMesh.name = "ParticleStack Particle Mesh";
 
-        GameObject parentObject = new GameObject("Particle Renderers");
-        rendererParent = parentObject.transform;
-        rendererParent.SetParent(transform, false);
+        Vector2[] spriteVertices = sprite.vertices;
+        Vector3[] vertices = new Vector3[spriteVertices.Length];
 
-        for (int i = 0; i < renderers.Length; i++)
+        for (int i = 0; i < spriteVertices.Length; i++)
         {
-            GameObject particleObject = new GameObject($"Particle {i}");
-            particleObject.transform.SetParent(rendererParent, false);
-
-            SpriteRenderer spriteRenderer =
-                particleObject.AddComponent<SpriteRenderer>();
-
-            spriteRenderer.sprite = sprite;
-
-            if (material != null)
-            {
-                spriteRenderer.sharedMaterial = material;
-            }
-
-            spriteRenderer.sortingLayerName = sortingLayerName;
-            spriteRenderer.sortingOrder = orderInLayer;
-
-            spriteRenderer.enabled = false;
-
-            renderers[i] = spriteRenderer;
+            vertices[i] = spriteVertices[i];
         }
-    }
 
+        ushort[] spriteTriangles = sprite.triangles;
+        int[] triangles = new int[spriteTriangles.Length];
+
+        for (int i = 0; i < spriteTriangles.Length; i++)
+        {
+            triangles[i] = spriteTriangles[i];
+        }
+
+        particleMesh.vertices = vertices;
+        particleMesh.uv = sprite.uv;
+        particleMesh.triangles = triangles;
+
+        particleMesh.RecalculateBounds();
+    }
 
     private void RenderParticles()
     {
-        int activeCount = activeParticleCount;
+        int particleIndex = 0;
 
-        for (int i = 0; i < activeCount; i++)
+        while (particleIndex < activeParticleCount)
         {
-            ref PSParticle particle = ref particles[i];
+            int batchCount = Mathf.Min(
+                MAX_INSTANCES_PER_BATCH,
+                activeParticleCount - particleIndex
+            );
 
-            SpriteRenderer spriteRenderer = renderers[i];
-            Transform particleTransform = spriteRenderer.transform;
-
-            if (!spriteRenderer.enabled)
+            for (int i = 0; i < batchCount; i++)
             {
-                spriteRenderer.enabled = true;
+                ref PSParticle particle =
+                    ref particles[particleIndex + i];
+
+                Vector3 position = new Vector3(
+                    particle.position.x,
+                    particle.position.y,
+                    transform.position.z
+                );
+
+                Quaternion rotation =
+                    Quaternion.Euler(
+                        0f,
+                        0f,
+                        particle.zRotation
+                    );
+
+                Vector3 scale = new Vector3(
+                    particle.scale.x,
+                    particle.scale.y,
+                    1f
+                );
+
+                instanceMatrices[i] = Matrix4x4.TRS(
+                    position,
+                    rotation,
+                    scale
+                );
+
+                instanceColours[i] = particle.colour;
             }
 
-            particleTransform.position = new Vector3(
-                particle.position.x,
-                particle.position.y,
-                transform.position.z
+            propertyBlock.Clear();
+
+            propertyBlock.SetVectorArray(
+                "_PSColour",
+                instanceColours
             );
 
-            particleTransform.rotation =
-                Quaternion.Euler(0f, 0f, particle.zRotation);
-
-            particleTransform.localScale = new Vector3(
-                particle.scale.x,
-                particle.scale.y,
-                1f
+            Graphics.DrawMeshInstanced(
+                particleMesh,
+                0,
+                runtimeMaterial,
+                instanceMatrices,
+                batchCount,
+                propertyBlock,
+                ShadowCastingMode.Off,
+                false,
+                gameObject.layer
             );
 
-            spriteRenderer.color = particle.colour;
+            particleIndex += batchCount;
         }
-
-        for (int i = activeCount; i < previousActiveCount; i++)
-        {
-            renderers[i].enabled = false;
-        }
-
-        previousActiveCount = activeCount;
     }
 }

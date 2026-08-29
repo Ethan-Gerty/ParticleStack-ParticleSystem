@@ -1,14 +1,14 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PSRandomColourBeh : PSBehaviour
 {
-    [SerializeField] private List<Color> colourList;
+    [SerializeField] private Color[] colours;
 
     public override void OnParticleSpawn(ref PSParticle particle)
     {
-        int i = Random.Range(0, colourList.Count);
+        if (colours == null || colours.Length == 0)
+            return;
 
-        particle.colour = colourList[i];
+        particle.colour = colours[Random.Range(0, colours.Length)];
     }
 }
